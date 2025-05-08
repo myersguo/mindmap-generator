@@ -72,7 +72,7 @@ export const convertToX6Data = (
       },
       label: {
         text: node.label,
-        fill: level === 2 ? '#333' : '#fff',
+        fill: level >= 2 ? '#333' : '#fff',
         textAnchor: style.textAnchor,
         textVerticalAnchor: style.textVerticalAnchor,
         fontSize: style.fontSize,

@@ -69,10 +69,15 @@ export const getDefaultPrompt = (): Prompt => {
   return defaultPrompt || prompts[0];
 };
 
-export const saveMindMap = (mindMap: any, prd: string): void => {
+export const saveMindMap = (mindMap: any, prdHtml: string): void => {
+  const prdText = new DOMParser().parseFromString(prdHtml, 'text/html').body.textContent || '';
+
   localStorage.setItem('currentMindMap', JSON.stringify({
     mindMap,
-    prd,
+    prd: {
+      html: prdHtml,
+      text: prdText
+    },
     timestamp: new Date().toISOString()
   }));
 };

@@ -4,8 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { getPrompts, getDefaultPrompt } from '../services/storageService';
 import { generateMindMap } from '../services/aiService';
 import { saveMindMap } from '../services/storageService';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { getCurrentMindMap } from '../services/storageService';
 
-const { TextArea } = Input;
+
 const { Option } = Select;
 
 const PRDForm: React.FC = () => {
@@ -16,8 +19,15 @@ const PRDForm: React.FC = () => {
 
   useEffect(() => {
     const defaultPrompt = getDefaultPrompt();
-    form.setFieldsValue({ promptId: defaultPrompt.id });
+    const currentMindMap = getCurrentMindMap(); // 从 localStorage 获取
+    const prdHtml = currentMindMap?.prd?.html || ''; // 获取富文本 HTML 内容
+  
+    form.setFieldsValue({ 
+      promptId: defaultPrompt.id, 
+      prd: prdHtml // 设置富文本内容
+    });
   }, [form]);
+  
 
   const handleSubmit = async (values: any) => {
     try {
@@ -29,7 +39,10 @@ const PRDForm: React.FC = () => {
         return;
       }
 
-      const mindMap = await generateMindMap(values.prd, selectedPrompt.content);
+      // 提取纯文本内容（如果需要）
+      const prdText = new DOMParser().parseFromString(values.prd, 'text/html').body.textContent || '';
+      
+      const mindMap = await generateMindMap(prdText, selectedPrompt.content);
       saveMindMap(mindMap, values.prd);
       message.success('脑图生成成功！');
       navigate('/mindmap');
@@ -39,6 +52,34 @@ const PRDForm: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 自定义富文本编辑器组件
+  const RichTextEditor = ({ value, onChange }: any) => {
+    return (
+      <ReactQuill
+        theme="snow"
+        value={value}
+        onChange={onChange}
+        placeholder="请输入产品需求文档(PRD)内容..."
+        style={{ 
+          height: 300,
+          fontFamily: 'monospace',
+          marginBottom: 24
+        }}
+        modules={{
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'header': 1 }, { 'header': 2 }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'script': 'sub'}, { 'script': 'super' }],
+            ['link', 'image'],
+            ['clean']
+          ]
+        }}
+      />
+    );
   };
 
   return (
@@ -51,13 +92,20 @@ const PRDForm: React.FC = () => {
         <Form.Item
           name="prd"
           label="PRD 需求描述"
-          rules={[{ required: true, message: '请输入PRD需求描述' }]}
+          rules={[
+            { 
+              required: true,
+              validator: (_, value) => {
+                const text = new DOMParser().parseFromString(value, 'text/html').body.textContent;
+                if (!text?.trim()) {
+                  return Promise.reject(new Error('请输入PRD需求描述'));
+                }
+                return Promise.resolve();
+              }
+            }
+          ]}
         >
-          <TextArea 
-            rows={10} 
-            placeholder="请输入产品需求文档(PRD)内容..."
-            style={{ fontFamily: 'monospace' }}
-          />
+          <RichTextEditor />
         </Form.Item>
 
         <Form.Item
