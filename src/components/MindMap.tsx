@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { Graph } from '@antv/x6';
 import { renderMindMap } from '../utils/mindmapConverter';
@@ -16,7 +17,7 @@ const MindMap: React.FC<MindMapProps> = ({ data, onGraphReady }) => {
     if (containerRef.current && !graphRef.current) {
       graphRef.current = new Graph({
         container: containerRef.current,
-        grid: true,
+        grid: false,
         mousewheel: {
           enabled: true,
           zoomAtMousePosition: true,
@@ -24,36 +25,19 @@ const MindMap: React.FC<MindMapProps> = ({ data, onGraphReady }) => {
           maxScale: 3,
         },
         connecting: {
-          anchor: 'center',
-          connectionPoint: 'anchor',
-          connector: 'smooth',
-          createEdge() {
-            return this.createEdge({
-              attrs: {
-                line: {
-                  stroke: '#333',
-                  strokeWidth: 1,
-                },
-              },
-            });
-          },
-        },
-        highlighting: {
-          magnetAdsorbed: {
-            name: 'stroke',
+          anchor: 'orth',
+          connector: 'rounded',
+          connectionPoint: 'boundary',
+          router: {
+            name: 'er',
             args: {
-              attrs: {
-                fill: '#5F95FF',
-                stroke: '#5F95FF',
-              },
+              offset: 24,
+              direction: 'H',
             },
           },
         },
         panning: {
           enabled: true,
-        },
-        interacting: {
-          nodeMovable: true,
         },
       });
       
@@ -81,9 +65,7 @@ const MindMap: React.FC<MindMapProps> = ({ data, onGraphReady }) => {
       style={{
         width: '100%',
         height: 'calc(100vh - 200px)',
-        border: '1px solid #f0f0f0',
-        borderRadius: '4px',
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#fff',
       }}
     />
   );

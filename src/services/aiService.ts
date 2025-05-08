@@ -23,8 +23,25 @@ export const generateMindMap = async (
 
   const systemMessage = {
     role: 'system',
-    content: `You are a helpful assistant that generates test cases. Always respond with a pure JSON object with a top-level \"nodes\" array. Each node must have keys \"id\" (string), \"label\" (string), and optionally \"children\" (array).` 
+    content: `
+  你是一个帮助生成脑图的助手。  
+  请严格输出 JSON，顶层字段为 "nodes"（数组）。  
+  每个节点示例：
+  输入: “请基于以下需求生成脑图：……”
+  输出:
+  \`\`\`json
+  {
+    "nodes": [
+      { "id": "1", "label": "Root", "children": [
+          { "id": "1.1", "label": "子节点A" },
+          { "id": "1.2", "label": "子节点B" }
+      ]}
+    ]
+  }
+  \`\`\`
+  `.trim()
   };
+  
 
   const userPrompt = promptTemplate.replace('{{PRD}}', prd);
 
